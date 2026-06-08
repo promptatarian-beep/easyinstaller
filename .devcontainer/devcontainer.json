@@ -1,0 +1,19 @@
+{
+  "name": "VibeOS devcontainer (QEMU + noVNC)",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "workspaceFolder": "/workspace",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools",
+        "ms-vscode.makefile-tools"
+      ]
+    }
+  },
+  "postCreateCommand": "./.devcontainer/post-create.sh || true",
+  "forwardPorts": [6080],
+  "remoteUser": "vscode"
+}
