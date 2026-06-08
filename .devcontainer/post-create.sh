@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
-# Post-create setup for devcontainer - make executable helper scripts
-chmod +x /workspace/scripts/run-qemu.sh || true
+# Post-create setup for devcontainer
+python3 -m pip install --user --upgrade pip
+python3 -m pip install --user ruamel.yaml
 
-# Optionally install python websockify dependencies in user site
-python3 -m pip install --user --upgrade websockify || true
-
-echo "Devcontainer post-create complete. Use the VS Code Tasks or run ./scripts/run-qemu.sh to start the VM."
+echo "Devcontainer post-create complete. Dependencies installed."

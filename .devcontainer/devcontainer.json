@@ -1,5 +1,5 @@
 {
-  "name": "VibeOS devcontainer (QEMU + noVNC)",
+  "name": "easyinstaller (Python)",
   "build": {
     "dockerfile": "Dockerfile"
   },
@@ -7,13 +7,12 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "ms-vscode.cpptools",
-        "ms-vscode.cmake-tools",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
         "ms-vscode.makefile-tools"
       ]
     }
   },
   "postCreateCommand": "./.devcontainer/post-create.sh || true",
-  "forwardPorts": [6080],
   "remoteUser": "vscode"
 }

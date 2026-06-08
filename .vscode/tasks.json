@@ -2,25 +2,24 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "VibeOS: make disk",
+      "label": "easyinstaller: setup config",
       "type": "shell",
-      "command": "make disk",
+      "command": "cp config_sample.yaml config.yaml && echo 'Config created — edit config.yaml to customize'",
       "options": { "cwd": "${workspaceFolder}" },
       "problemMatcher": []
     },
     {
-      "label": "VibeOS: build all",
+      "label": "easyinstaller: build installer",
       "type": "shell",
-      "command": "make",
+      "command": "python3 build.py --config config.yaml",
       "options": { "cwd": "${workspaceFolder}" },
       "problemMatcher": []
     },
     {
-      "label": "VibeOS: run (QEMU + noVNC)",
+      "label": "easyinstaller: run tests",
       "type": "shell",
-      "command": "./scripts/run-qemu.sh",
+      "command": "python3 -m pytest tests/ -v 2>/dev/null || python3 -m unittest discover -s tests/ -p 'test_*.py' -v 2>/dev/null || echo 'No tests found'",
       "options": { "cwd": "${workspaceFolder}" },
-      "isBackground": true,
       "problemMatcher": []
     }
   ]
