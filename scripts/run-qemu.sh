@@ -51,14 +51,16 @@ echo "noVNC web UI will be available on port ${WS_PORT}"
 echo ""
 
 # Use websockify CLI with noVNC web UI
-# Check if noVNC web files exist, otherwise run without --web flag
-NOVNC_WEB_DIR="/opt/noVNC"
-if [ -d "$NOVNC_WEB_DIR" ]; then
+# Find the installed novnc package
+NOVNC_WEB_DIR=$(python3 -c "import novnc, os; print(os.path.dirname(novnc.__file__))" 2>/dev/null)
+
+if [ -n "$NOVNC_WEB_DIR" ] && [ -d "$NOVNC_WEB_DIR" ]; then
   websockify --web "$NOVNC_WEB_DIR" ${WS_PORT} ${VNC_HOST}:${VNC_PORT} 2>&1 &
   WEBSOCKIFY_PID=$!
   echo "WebSockify with noVNC UI on port ${WS_PORT}"
+  echo "  Web root: $NOVNC_WEB_DIR"
 else
-  # fallback without web UI - still works for VNC access
+  # fallback: just proxy without web UI
   websockify ${WS_PORT} ${VNC_HOST}:${VNC_PORT} 2>&1 &
   WEBSOCKIFY_PID=$!
   echo "WebSockify (proxy only) on port ${WS_PORT}"
