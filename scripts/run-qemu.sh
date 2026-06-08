@@ -51,21 +51,38 @@ echo "noVNC web UI will be available on port ${WS_PORT}"
 echo ""
 
 # Use websockify CLI with noVNC web UI
-# Find the installed novnc package
-NOVNC_WEB_DIR=$(python3 -c "import novnc, os; print(os.path.dirname(novnc.__file__))" 2>/dev/null)
+# Extract noVNC resources if needed
+NOVNC_WEB_DIR="/tmp/novnc_server"
+if [ ! -d "$NOVNC_WEB_DIR" ]; then
+  echo "Extracting noVNC resources..."
+  python3 -c "
+import zipfile, os
+from pathlib import Path
+# Try to find novnc package
+try:
+    import novnc
+    novnc_pkg = Path(novnc.__file__).parent
+    zf = novnc_pkg / 'resources' / 'novnc_server.zip'
+    if zf.exists():
+        with zipfile.ZipFile(zf, 'r') as z:
+            z.extractall('$NOVNC_WEB_DIR')
+        print(f'Extracted to $NOVNC_WEB_DIR')
+except:
+    print('Could not extract noVNC')
+" 2>/dev/null || true
+fi
 
-if [ -n "$NOVNC_WEB_DIR" ] && [ -d "$NOVNC_WEB_DIR" ]; then
+if [ -f "$NOVNC_WEB_DIR/vnc.html" ]; then
   websockify --web "$NOVNC_WEB_DIR" ${WS_PORT} ${VNC_HOST}:${VNC_PORT} 2>&1 &
   WEBSOCKIFY_PID=$!
-  echo "WebSockify with noVNC UI on port ${WS_PORT}"
-  echo "  Web root: $NOVNC_WEB_DIR"
+  echo "✓ WebSockify with noVNC UI on port ${WS_PORT}"
 else
   # fallback: just proxy without web UI
   websockify ${WS_PORT} ${VNC_HOST}:${VNC_PORT} 2>&1 &
   WEBSOCKIFY_PID=$!
-  echo "WebSockify (proxy only) on port ${WS_PORT}"
+  echo "✓ WebSockify (proxy only) on port ${WS_PORT}"
 fi
-echo "WebSockify PID=$WEBSOCKIFY_PID"
+echo "  WebSockify PID=$WEBSOCKIFY_PID"
 
 echo ""
 echo "════════════════════════════════════════════════════════"
