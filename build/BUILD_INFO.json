@@ -1,0 +1,12 @@
+{
+  "project_name": "Easy Diffusion",
+  "project_version": 2.5,
+  "project_author": "cmdr2 and contributors",
+  "project_website": "https://stable-diffusion-ui.github.io",
+  "platforms": [
+    "windows",
+    "mac",
+    "linux"
+  ],
+  "build_timestamp": "2026-06-08T07:29:16.292726"
+}

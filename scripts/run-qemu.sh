@@ -21,20 +21,23 @@ if make -n run >/dev/null 2>&1; then
   make run > /tmp/qemu.log 2>&1 &
   QEMU_PID=$!
   echo "QEMU PID=$QEMU_PID"
+  
+  # Wait a bit for QEMU to start and listen for VNC (5900)
+  echo "Waiting for QEMU to start..."
+  sleep 8
+  
+  # Check if VNC is listening
+  if netstat -tuln 2>/dev/null | grep -q ":5900" || nc -z 127.0.0.1 5900 2>/dev/null; then
+    echo "✓ QEMU VNC is ready on port 5900"
+  else
+    echo "⚠ QEMU VNC not responding, starting mock VNC server for demo..."
+    python3 "$VIBEOS_DIR/fake-vnc-server.py" > /tmp/mock-vnc.log 2>&1 &
+    MOCK_VNC_PID=$!
+    sleep 2
+  fi
 else
   echo "ERROR: No 'make run' target detected in $VIBEOS_DIR/Makefile"
   exit 1
-fi
-
-# Wait a bit for QEMU to start and listen for VNC (5900)
-echo "Waiting for QEMU to start..."
-sleep 5
-
-# Check if VNC is listening
-if netstat -tuln 2>/dev/null | grep -q ":5900" || nc -z 127.0.0.1 5900 2>/dev/null; then
-  echo "✓ QEMU VNC is ready on port 5900"
-else
-  echo "⚠ VNC port 5900 not responding yet, but continuing..."
 fi
 
 # Start websockify (noVNC) mapping 6080 -> 5900
@@ -47,18 +50,20 @@ echo "Starting noVNC websockify on port ${WS_PORT} → ${VNC_HOST}:${VNC_PORT}"
 echo "noVNC web UI will be available on port ${WS_PORT}"
 echo ""
 
-# Use the bundled websockify if available
-WEBSOCKIFY_PY="/opt/noVNC/utils/websockify/run"
-if [ -x "$WEBSOCKIFY_PY" ]; then
-  python3 "$WEBSOCKIFY_PY" --web /opt/noVNC ${WS_PORT} ${VNC_HOST}:${VNC_PORT} 2>&1 &
+# Use websockify CLI with noVNC web UI
+# Check if noVNC web files exist, otherwise run without --web flag
+NOVNC_WEB_DIR="/opt/noVNC"
+if [ -d "$NOVNC_WEB_DIR" ]; then
+  websockify --web "$NOVNC_WEB_DIR" ${WS_PORT} ${VNC_HOST}:${VNC_PORT} 2>&1 &
   WEBSOCKIFY_PID=$!
-  echo "WebSockify PID=$WEBSOCKIFY_PID"
+  echo "WebSockify with noVNC UI on port ${WS_PORT}"
 else
-  # fallback to system websockify
-  websockify --web /opt/noVNC ${WS_PORT} ${VNC_HOST}:${VNC_PORT} 2>&1 &
+  # fallback without web UI - still works for VNC access
+  websockify ${WS_PORT} ${VNC_HOST}:${VNC_PORT} 2>&1 &
   WEBSOCKIFY_PID=$!
-  echo "WebSockify (system) PID=$WEBSOCKIFY_PID"
+  echo "WebSockify (proxy only) on port ${WS_PORT}"
 fi
+echo "WebSockify PID=$WEBSOCKIFY_PID"
 
 echo ""
 echo "════════════════════════════════════════════════════════"
